@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <title>Document</title>
+</head>
+<body>
+    <div class="header">
+        <% if (!req.oidc.isAuthenticated()) { %>
+            <a class="login" href="/login"> LOGIN </a>
+            <div class="hello">Welcome, Anonymous!</div>
+        <% } else { %>
+            <a class="login" href="/logout"> LOGOUT </a>
+            <div class="hello">Welcome, <%= req.oidc.user.name %>! </div>
+        <% } %>
+    </div>
+    <div>
+        <table class="league" id="league">
+            <tr>
+                <th>POS</th>
+                <th class="teamHead">TEAM</th>
+                <th>MP</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>F</th>
+                <th>A</th>
+                <th>GD</th>
+                <th>PTS</th>
+            </tr>
+            <% let i = 0 %> 
+            <% data.teams.forEach(team => { %>
+                <% i++ %> 
+            <tr>
+                <td><%= i %></td>
+                <% for (var key in team) { %>
+                    <td><%= team[key] %></td>
+                <% } %>
+            </tr>
+            <% }) %>
+        </table>
+    </div>
+    <div class="weekmatches">
+    <% for( let i = 0; i < data.matchweeks.length; i++ ) { %>
+        <% let match = data.matchweeks[i] %>
+        <div class="weekmatch">
+            <table class="games">
+                <th colspan="5">WEEKMATCH <%= i+1 %> </th>
+                <% match.games.forEach(game => { %>
+                <tr class="game">
+                    <td> <%= game.team1 %> </td>
+                    <td> <%= game.score1 %></td>
+                    <td> - </td>
+                    <td> <%= game.score2 %> </td>
+                    <td> <%= game.team2 %> </td>
+                </tr>
+                <% }) %>
+            </table>
+        </div>
+    <% } %>     
+    </div>
+    <div class="comment-section-title">
+        COMMENT SECTION
+    </div>
+    <div class="commentSection">
+        <% for( let i = 0; i < data.matchweeks.length; i++ ) { %>
+        <% let match = data.matchweeks[i] %>
+        <div class="section">
+            <div class="comment-title">WEEKMATCH <%= i+1 %></div>
+            <div class="comments">
+                <% let k = 0 %>
+                <% match.comments.forEach(comment => { %>
+                    <div class="comment">
+                        <form action="/delete" method="post">
+                            <input type="submit" value="X" name="button" <%= req.oidc.isAuthenticated() ? (req.oidc.user.name == comment.username ? "" : (req.oidc.user.role == "admin" ? "" : "disabled")) : "disabled" %>>
+                        <span class="username"> <%= comment.username %> </span>
+                        <input type="text" class="content" placeholder="<%= comment.content %>">
+                        <input type="hidden" name="index" value="<%= k %>">
+                        <input type="hidden" name="week" value="<%= i %>">
+                        </form>
+                    </div>
+                    <% console.log(k++) %>
+                <% }) %>
+            </div>
+            <form action="/post" method="post">
+                <input type="text"  name="comment" value=""/>
+                <input type="submit" value="Post" name="button" <%= req.oidc.isAuthenticated() ? (req.oidc.user.role == "admin" ? "disabled" : "") : "disabled" %>/>
+                <input type="hidden" name="week" value="<%= i %>">
+            </form>
+        </div>
+        <% } %>
+    </div>
+
+</body>
+</html>
+
+
